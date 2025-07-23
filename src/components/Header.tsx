@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   ChevronDown,
@@ -12,8 +13,9 @@ import {
 } from "lucide-react";
 
 /**
- * Header Component Props Interface
- * Defines the props required for the Header component
+ * Unified Header Component
+ * Main navigation header with search, user menu, and mobile navigation
+ * Integrated with React Router for navigation
  */
 interface HeaderProps {
   onSearchChange: (value: string) => void;
@@ -23,11 +25,6 @@ interface HeaderProps {
   onSectionChange: (section: string) => void;
 }
 
-/**
- * Header Component
- * Main navigation header with search, user menu, and mobile navigation
- * Responsive design with different layouts for mobile and desktop
- */
 const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   onMobileMenuToggle,
@@ -35,28 +32,32 @@ const Header: React.FC<HeaderProps> = ({
   user,
   onSectionChange,
 }) => {
-  // State for search input value
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-  // State for managing dropdown visibility
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  /**
-   * Handle search input changes
-   * Updates local state and calls parent callback
-   */
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchValue(value);
     onSearchChange(value);
   };
 
-  /**
-   * Toggle dropdown menu visibility
-   * @param dropdown - The dropdown identifier to toggle
-   */
   const toggleDropdown = (dropdown: string) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
+
+  // NEET dropdown options with navigation
+  const neetOptions = [
+    { id: "neet-ug", label: "NEET UG", description: "Undergraduate Medical", path: "/neet-ug" },
+    { id: "neet-pg", label: "NEET PG", description: "Postgraduate Medical", path: "/neet-pg" },
+    { id: "inicet", label: "INICET", description: "Institute of National Importance", path: "/inicet" },
+  ];
+
+  // Predictor dropdown options
+  const predictorOptions = [
+    { id: "ug-predictor", label: "UG Predictor", description: "NEET UG College Predictor", path: "/predictor/ug" },
+    { id: "pg-predictor", label: "PG Predictor", description: "NEET PG Specialty Predictor", path: "/predictor/pg" },
+  ];
 
   return (
     <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/50 px-4 lg:px-6 py-2 lg:py-2 sticky top-0 z-40 shadow-sm h-16">
@@ -64,18 +65,22 @@ const Header: React.FC<HeaderProps> = ({
         {/* Mobile Header Layout */}
         <div className="xl:hidden flex items-center justify-between w-full">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">BD</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                BD-Counselling
-              </h1>
-            </div>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">BD</span>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  BD-Counselling
+                </h1>
+              </div>
+            </button>
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* Navigation Arrows */}
             <button className="p-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -89,10 +94,12 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => onSectionChange("profile")}
+              onClick={() => navigate("/profile")}
               className="w-10 h-10 bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-xl hover:from-slate-600 hover:to-slate-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center"
             >
-              <span className="font-medium text-sm">{user?.avatar || "U"}</span>
+              <span className="font-medium text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </span>
             </button>
 
             <button
@@ -111,7 +118,10 @@ const Header: React.FC<HeaderProps> = ({
         {/* Desktop Header Layout */}
         <div className="hidden xl:flex items-center justify-between w-full">
           <div className="flex items-center space-x-4 lg:space-x-8">
-            <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center space-x-3"
+            >
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">BD</span>
               </div>
@@ -123,44 +133,76 @@ const Header: React.FC<HeaderProps> = ({
                   Medical Career Guidance
                 </p>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center space-x-6">
+              {/* NEET Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => toggleDropdown("neet")}
                   className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 font-medium"
                 >
-                  <span>NEET UG</span>
+                  <span>NEET</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {activeDropdown === "neet" && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/50 py-2 z-50 animate-in slide-in-from-top-2">
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      NEET UG
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      NEET PG
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      INICET
-                    </a>
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/50 py-2 z-50 animate-in slide-in-from-top-2">
+                    {neetOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => {
+                          navigate(option.path);
+                          setActiveDropdown(null);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="font-medium text-slate-800">
+                          {option.label}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          {option.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Predictor Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => toggleDropdown("predictor")}
+                  className="flex items-center space-x-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded-xl transition-all duration-200 font-medium"
+                >
+                  <span>Predictors</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === "predictor" && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/50 py-2 z-50 animate-in slide-in-from-top-2">
+                    {predictorOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => {
+                          navigate(option.path);
+                          setActiveDropdown(null);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="font-medium text-slate-800">
+                          {option.label}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          {option.description}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
 
               <button
                 className="flex items-center space-x-2 px-4 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-200 font-medium"
-                onClick={() => onSectionChange("ChoiceLists")}
+                onClick={() => navigate("/choice-lists")}
               >
                 <Heart className="w-4 h-4" />
                 <span>My Choice Lists</span>
@@ -181,7 +223,6 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Navigation Arrows */}
               <button className="p-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -199,36 +240,37 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
                 {activeDropdown === "institutes" && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200/50 py-2 z-50 animate-in slide-in-from-top-2">
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    <button
+                      onClick={() => navigate("/universities")}
+                      className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
                       All Institutes
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    </button>
+                    <button
+                      onClick={() => navigate("/rankings")}
+                      className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
                       Top Institutes
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    </button>
+                    <button
+                      onClick={() => navigate("/medical-colleges")}
+                      className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
                       Government
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
+
               <button
-                onClick={() => onSectionChange("faq")}
+                onClick={() => navigate("/faq")}
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 FAQ
               </button>
 
               <button
-                onClick={() => onSectionChange("support")}
+                onClick={() => navigate("/support")}
                 className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 Support
@@ -241,14 +283,17 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => onSectionChange("profile")}
+              onClick={() => navigate("/profile")}
               className="p-2.5 bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-xl hover:from-slate-600 hover:to-slate-700 transition-all duration-200 transform hover:scale-105"
             >
-              <span className="font-medium">{user?.avatar || "U"}</span>
+              <span className="font-medium">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </span>
             </button>
           </div>
         </div>
       </div>
+
       {/* Mobile Search Bar */}
       <div className="xl:hidden mt-3">
         <div className="relative">
@@ -258,7 +303,7 @@ const Header: React.FC<HeaderProps> = ({
             placeholder="Search courses, colleges..."
             value={searchValue}
             onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 transition-all duration-200 text-sm"
+            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 transition-all duration-200"
           />
         </div>
       </div>

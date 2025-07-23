@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -7,36 +8,42 @@ import {
   GraduationCap,
   Stethoscope,
   BookOpen,
+  AlertCircle,
 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
-interface LoginPageProps {
-  onLogin: (userData: any) => void;
-}
-
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState("demo@gmail.com");
-  const [password, setPassword] = useState("password123");
+/**
+ * Login Page Component
+ * Handles user authentication with email and password
+ * Integrates with Django backend API via AuthContext
+ */
+const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  /**
+   * Handle form submission
+   * API Integration: POST /api/auth/login/
+   */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      const userData = {
-        name: "Demo Student",
-        email: email,
-        phone: "+91 9876543210",
-        neetRank: "12,345",
-        category: "General",
-        state: "Maharashtra",
-        avatar: "DS",
-      };
-      onLogin(userData);
+    try {
+      await login(email, password);
+      navigate("/dashboard");
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -49,10 +56,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <span className="text-white font-bold text-2xl">BD</span>
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              BD-Consulting
+              BD-Counselling
             </h1>
             <p className="text-slate-600">Medical Career Guidance Platform</p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <span className="text-red-700 text-sm">{error}</span>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
@@ -117,13 +132,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50/50 rounded-xl border border-blue-200">
-            <p className="text-sm text-blue-700 font-medium mb-2">
-              Demo Credentials:
+          {/* Sign Up Link */}
+          <div className="mt-6 text-center">
+            <p className="text-slate-600">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Sign up here
+              </Link>
             </p>
-            <p className="text-xs text-blue-600">Email: demo@gmail.com</p>
-            <p className="text-xs text-blue-600">Password: password123</p>
           </div>
 
           {/* Features */}

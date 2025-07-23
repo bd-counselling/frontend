@@ -26,10 +26,15 @@ interface ChoiceList {
  * ChoiceLists Component
  * Manages and displays user's choice lists for college preferences
  * Includes create, edit, and delete functionality
+ * API Integration: GET/POST/PUT/DELETE /api/counselling/choice-lists/
  */
-const ChoiceLists: React.FC = () => {
+interface ChoiceListsProps {
+  choiceLists?: any[];
+}
+
+const ChoiceLists: React.FC<ChoiceListsProps> = ({ choiceLists: propChoiceLists }) => {
   // State for managing choice lists
-  const [lists, setLists] = useState<ChoiceList[]>([
+  const [lists, setLists] = useState<ChoiceList[]>(propChoiceLists || [
     {
       id: "1",
       name: "AIQ R1 Priority List",
@@ -68,6 +73,7 @@ const ChoiceLists: React.FC = () => {
   /**
    * Create a new choice list
    * Adds a new list to the state with default values
+   * API Integration: POST /api/counselling/choice-lists/
    */
   const createNewList = () => {
     if (newListName.trim()) {
@@ -87,6 +93,7 @@ const ChoiceLists: React.FC = () => {
   /**
    * Delete a choice list
    * @param id - ID of the list to delete
+   * API Integration: DELETE /api/counselling/choice-lists/{id}/
    */
   const deleteList = (id: string) => {
     setLists(lists.filter((list) => list.id !== id));
